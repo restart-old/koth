@@ -45,6 +45,7 @@ func (k *KOTH) Handle(h KOTHHandler) {
 	k.h = h
 }
 
+func (k *KOTH) Started() bool           { return k.started }
 func (k *KOTH) World() *world.World     { return k.world }
 func (k *KOTH) CaptureArea() area.Area  { return k.captureArea }
 func (k *KOTH) Duration() time.Duration { return k.duration }
