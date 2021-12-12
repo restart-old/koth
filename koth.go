@@ -11,6 +11,8 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 )
 
+// I'll add comments when I have time
+
 var koths []*KOTH
 
 func Register(k *KOTH) {
