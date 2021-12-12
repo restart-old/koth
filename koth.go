@@ -4,107 +4,113 @@ import (
 	"sync"
 	"time"
 
+	"github.com/df-mc/dragonfly/server/event"
 	"github.com/df-mc/dragonfly/server/player"
+	"github.com/df-mc/dragonfly/server/world"
 	"github.com/dragonfly-on-steroids/area"
 	"github.com/go-gl/mathgl/mgl64"
 )
 
-var koths []KOTH
+var koths []*KOTH
 
-func Register(k KOTH) {
+func Register(k *KOTH) {
 	koths = append(koths, k)
 }
 
-type kothStatus struct {
-	capturing *player.Player
-	captureAt time.Time
+type KOTH struct {
+	world           *world.World
+	captureArea     area.Area
+	duration        time.Duration
+	hMutex          sync.RWMutex
+	h               KOTHHandler
+	capturing       *player.Player
+	shouldCaptureAt time.Time
+	started         bool
 }
 
-func newKothStatus() *kothStatus {
-	return &kothStatus{
-		capturing: nil,
+func NewKOTH(world *world.World, captureArea area.Area, duration time.Duration) *KOTH {
+	return &KOTH{
+		world:       world,
+		captureArea: captureArea,
+		duration:    duration,
 	}
 }
 
-func StopCapturing(p1 *player.Player, k KOTH) {
-	if p, ok := BeingCaptured(k); ok && p == p1 {
-		k.StopCapturing(p)
-		SetCapturing(nil, k)
+func (k *KOTH) Handle(h KOTHHandler) {
+	k.hMutex.Lock()
+	defer k.hMutex.Unlock()
+	if h == nil {
+		h = NopHandler{}
 	}
-}
-func StartCapturing(p1 *player.Player, k KOTH) {
-	if p, ok := BeingCaptured(k); !ok && p != p1 {
-		k.StartCapturing(p)
-		SetCapturing(p1, k)
-		time.AfterFunc(k.Duration(), ShouldCaptureFunc(p1, k))
-	}
+	k.h = h
 }
 
-func ShouldCaptureFunc(p *player.Player, k KOTH) func() {
+func (k *KOTH) World() *world.World     { return k.world }
+func (k *KOTH) CaptureArea() area.Area  { return k.captureArea }
+func (k *KOTH) Duration() time.Duration { return k.duration }
+func (k *KOTH) handler() KOTHHandler    { return k.h }
+func (k *KOTH) Capturing() (*player.Player, bool) {
+	return k.capturing, k.capturing != nil
+}
+func (k *KOTH) Start(src Source) {
+	if !k.started {
+		ctx := event.C()
+		k.handler().HandleStart(ctx, src)
+		ctx.Continue(func() {
+			k.started = true
+
+		})
+	}
+}
+func (k *KOTH) Stop(src Source) {
+	if k.started {
+		ctx := event.C()
+		k.handler().HandleStop(ctx, src)
+		ctx.Continue(func() {
+			k.started = false
+		})
+	}
+
+}
+func (k *KOTH) StartCapturing(p *player.Player) {
+	if k.started {
+		if k.capturing != p {
+			ctx := event.C()
+			k.handler().HandleStartCapturing(ctx, p)
+			ctx.Continue(func() {
+				k.capturing = p
+				k.shouldCaptureAt = time.Now().Add(k.duration)
+				time.AfterFunc(k.duration, k.captureFunc(p))
+			})
+		}
+	}
+}
+func (k *KOTH) StopCapturing(p *player.Player) {
+	if k.started {
+		if k.capturing == p {
+			ctx := event.C()
+			k.handler().HandleStopCapturing(ctx, p)
+			ctx.Continue(func() {
+				k.capturing = nil
+				k.shouldCaptureAt = time.Now().Add(43830 * time.Minute)
+			})
+		}
+	}
+}
+func (k *KOTH) captureFunc(p *player.Player) func() {
 	return func() {
-		if status, ok := IsStarted(k); ok {
-			if status.captureAt.Before(time.Now()) || status.captureAt.Equal(time.Now()) {
-				StopKOTH(k)
-				k.Capture(p)
+		if k.capturing != nil && k.capturing == p {
+			if k.shouldCaptureAt.Before(time.Now()) || k.shouldCaptureAt.Equal(time.Now()) {
+				ctx := event.C()
+				k.h.HandleCapture(ctx, p)
+				ctx.Continue(func() {
+					k.Stop(SourceCapture{winner: p})
+				})
 			}
 		}
 	}
 }
 
-var running sync.Map
-
-func StartKOTH(k KOTH) {
-	running.Store(k, newKothStatus())
-	k.Start()
-}
-func StopKOTH(k KOTH) {
-	running.Delete(k)
-	k.Stop()
-}
-
-type KOTH interface {
-	Start()
-	Stop()
-
-	StartCapturing(p *player.Player)
-	StopCapturing(p *player.Player)
-
-	CaptureArea() area.Area
-	Duration() time.Duration
-
-	Capture(p *player.Player)
-}
-
-type NopKOTH struct{}
-
-func (NopKOTH) Start()                          {}
-func (NopKOTH) Stop()                           {}
-func (NopKOTH) StartCapturing(p *player.Player) {}
-func (NopKOTH) StopCapturing(p *player.Player)  {}
-func (NopKOTH) CaptureArea() area.Area          { return area.Area{} }
-func (NopKOTH) Duration() time.Duration         { return 0 }
-func (NopKOTH) Capture(p *player.Player)        {}
-
-func IsStarted(k KOTH) (*kothStatus, bool) {
-	status, ok := running.Load(k)
-	s, ok := status.(*kothStatus)
-	return s, ok
-}
-
-func BeingCaptured(k KOTH) (*player.Player, bool) {
-	if status, ok := IsStarted(k); ok {
-		return status.capturing, status.capturing != nil
-	}
-	return nil, false
-}
-
-func InCaptureArea(pos mgl64.Vec3, k KOTH) bool {
-	return k.CaptureArea().Vec2Within(mgl64.Vec2{pos[0], pos[2]})
-}
-
-func SetCapturing(p *player.Player, k KOTH) {
-	if status, ok := IsStarted(k); ok {
-		status.capturing = p
-		status.captureAt = time.Now().Add(k.Duration())
-	}
+func (k *KOTH) InCaptureArea(pos mgl64.Vec3) bool {
+	return k.captureArea.Vec2Within(mgl64.Vec2{pos[0], pos[2]})
 }
