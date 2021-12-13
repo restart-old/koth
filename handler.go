@@ -47,7 +47,7 @@ func (k *PlayerHandler) HandleMove(ctx *event.Context, newPos mgl64.Vec3, newYaw
 		k.p.SendTip(math.Round(newPos[0]), math.Round(newPos[2]))
 		for _, koth := range koths {
 			if koth.started {
-				if koth.InCaptureArea(newPos) {
+				if koth.captureArea.Vec3WithinXZ(newPos) {
 					koth.StartCapturing(k.p)
 				} else {
 					koth.StopCapturing(k.p)

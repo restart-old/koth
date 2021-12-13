@@ -55,6 +55,8 @@ github.com/df-mc/goleveldb v1.1.9 h1:ihdosZyy5jkQKrxucTQmN90jq/2lUwQnJZjIYIC/9YU
 github.com/df-mc/goleveldb v1.1.9/go.mod h1:+NHCup03Sci5q84APIA21z3iPZCuk6m6ABtg4nANCSk=
 github.com/dragonfly-on-steroids/area v0.0.0-20211211220545-1222ecfe69f6 h1:h3Xz+nuNn4hAyNvPdtz5BAr5wt2N/hJpSiekFlXw5Oc=
 github.com/dragonfly-on-steroids/area v0.0.0-20211211220545-1222ecfe69f6/go.mod h1:UPAiXJ0A1DKKb3SuEIAhYT57I0FFjLSm8sv/+FT9En0=
+github.com/dragonfly-on-steroids/area v0.0.0-20211213202250-675962245831 h1:H5FVpeZwvidSfP3Phe4QX6zjnbMH7qXWlkV+i+zn3Ds=
+github.com/dragonfly-on-steroids/area v0.0.0-20211213202250-675962245831/go.mod h1:UPAiXJ0A1DKKb3SuEIAhYT57I0FFjLSm8sv/+FT9En0=
 github.com/dragonfly-on-steroids/claim v0.0.0-20211212012523-a51e5f857c61 h1:qq3MhtuJc/ySErNY5poiRNrrg+GYZ6rhIKDDj6w+Ze8=
 github.com/dragonfly-on-steroids/claim v0.0.0-20211212012523-a51e5f857c61/go.mod h1:eM4K+47Q/FHg6RKq4waxy4LM9I3pk1GW2sUqJvIBt6g=
 github.com/dragonfly-on-steroids/claim v0.0.0-20211212025917-0305e0c4c6b0 h1:HXE+/4xDhlwMvPOj52MgLTt1S68by0aWaY5ohmSZuUM=

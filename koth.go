@@ -8,7 +8,6 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/dragonfly-on-steroids/area"
-	"github.com/go-gl/mathgl/mgl64"
 )
 
 // I'll add comments when I have time
@@ -112,8 +111,4 @@ func (k *KOTH) captureFunc(p *player.Player) func() {
 			}
 		}
 	}
-}
-
-func (k *KOTH) InCaptureArea(pos mgl64.Vec3) bool {
-	return k.captureArea.Vec2Within(mgl64.Vec2{pos[0], pos[2]})
 }

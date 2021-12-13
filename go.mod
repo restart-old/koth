@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/df-mc/dragonfly v0.4.3-0.20211211005319-6f45380fec02
-	github.com/dragonfly-on-steroids/area v0.0.0-20211211220545-1222ecfe69f6
+	github.com/dragonfly-on-steroids/area v0.0.0-20211213202250-675962245831
 	github.com/dragonfly-on-steroids/claim v0.0.0-20211212025917-0305e0c4c6b0
 	github.com/dragonfly-on-steroids/moreHandlers v0.0.0-20211210211204-565bab0501ef
 	github.com/go-gl/mathgl v1.0.0
