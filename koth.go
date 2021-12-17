@@ -20,7 +20,7 @@ func Register(k *KOTH) {
 
 type KOTH struct {
 	world           *world.World
-	captureArea     area.Area
+	captureArea     area.Vec2
 	duration        time.Duration
 	hMutex          sync.RWMutex
 	h               KOTHHandler
@@ -29,7 +29,7 @@ type KOTH struct {
 	started         bool
 }
 
-func NewKOTH(world *world.World, captureArea area.Area, duration time.Duration) *KOTH {
+func NewKOTH(world *world.World, captureArea area.Vec2, duration time.Duration) *KOTH {
 	return &KOTH{
 		world:       world,
 		captureArea: captureArea,
@@ -48,7 +48,7 @@ func (k *KOTH) Handle(h KOTHHandler) {
 
 func (k *KOTH) Started() bool           { return k.started }
 func (k *KOTH) World() *world.World     { return k.world }
-func (k *KOTH) CaptureArea() area.Area  { return k.captureArea }
+func (k *KOTH) CaptureArea() area.Vec2  { return k.captureArea }
 func (k *KOTH) Duration() time.Duration { return k.duration }
 func (k *KOTH) handler() KOTHHandler    { return k.h }
 func (k *KOTH) Capturing() (*player.Player, bool) {

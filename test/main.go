@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/df-mc/dragonfly/server"
-	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/event"
-	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/dragonfly-on-steroids/area"
 	"github.com/dragonfly-on-steroids/claim"
@@ -17,15 +15,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type testClaim struct {
-	claim.NopClaim
-}
-
-func (testClaim) Area() area.Area { return area.NewArea(mgl64.Vec2{-10, -10}, mgl64.Vec2{30, 30}) }
-func (testClaim) AllowBreakBlock(p *player.Player, pos cube.Pos, drops *[]item.Stack) bool {
-	return false
-}
-
 func main() {
 	c := server.DefaultConfig()
 	c.Players.SaveData = false
@@ -34,9 +23,7 @@ func main() {
 	log.Level = logrus.DebugLevel
 	s := server.New(&c, log)
 	s.Start()
-
-	claim.Register(testClaim{})
-	k := koth.NewKOTH(s.World(), area.NewArea(mgl64.Vec2{10, 10}, mgl64.Vec2{15, 15}), 5*time.Second)
+	k := koth.NewKOTH(s.World(), area.NewVec2(mgl64.Vec2{10, 10}, mgl64.Vec2{15, 15}), 5*time.Second)
 	k.Handle(&Handler{})
 	koth.Register(k)
 	for {
