@@ -6,7 +6,6 @@ import (
 
 	"github.com/df-mc/dragonfly/server/event"
 	"github.com/df-mc/dragonfly/server/player"
-	"github.com/df-mc/dragonfly/server/world"
 	"github.com/dragonfly-on-steroids/area"
 )
 
@@ -14,30 +13,35 @@ import (
 
 var koths []*KOTH
 
+func KOTHS() []*KOTH {
+	return koths
+}
+
 func Register(k *KOTH) {
 	koths = append(koths, k)
 }
 
 type KOTH struct {
-	world           *world.World
+	name            string
 	captureArea     area.Vec2
 	duration        time.Duration
 	hMutex          sync.RWMutex
-	h               KOTHHandler
+	h               Handler
 	capturing       *player.Player
 	shouldCaptureAt time.Time
 	started         bool
 }
 
-func NewKOTH(world *world.World, captureArea area.Vec2, duration time.Duration) *KOTH {
+func NewKOTH(name string, captureArea area.Vec2, duration time.Duration) *KOTH {
 	return &KOTH{
-		world:       world,
+		name:        name,
 		captureArea: captureArea,
 		duration:    duration,
+		h:           NopHandler{},
 	}
 }
 
-func (k *KOTH) Handle(h KOTHHandler) {
+func (k *KOTH) Handle(h Handler) {
 	k.hMutex.Lock()
 	defer k.hMutex.Unlock()
 	if h == nil {
@@ -46,11 +50,11 @@ func (k *KOTH) Handle(h KOTHHandler) {
 	k.h = h
 }
 
+func (k *KOTH) Name() string            { return k.name }
 func (k *KOTH) Started() bool           { return k.started }
-func (k *KOTH) World() *world.World     { return k.world }
 func (k *KOTH) CaptureArea() area.Vec2  { return k.captureArea }
 func (k *KOTH) Duration() time.Duration { return k.duration }
-func (k *KOTH) handler() KOTHHandler    { return k.h }
+func (k *KOTH) handler() Handler        { return k.h }
 func (k *KOTH) Capturing() (*player.Player, bool) {
 	return k.capturing, k.capturing != nil
 }

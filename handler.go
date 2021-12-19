@@ -8,7 +8,7 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 )
 
-type KOTHHandler interface {
+type Handler interface {
 	HandleStartCapturing(ctx *event.Context, p *player.Player)
 	HandleStopCapturing(ctx *event.Context, p *player.Player)
 
